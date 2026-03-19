@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TennisSense Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050709;
+  --s1: #0a0f14;
+  --s2: #0f1820;
+  --s3: #162030;
+  --border: #1a2a3a;
+  --green: #00ff88;
+  --blue: #0af;
+  --orange: #ff8c00;
+  --red: #ff3366;
+  --yellow: #ffe033;
+  --text: #d0e8f0;
+  --muted: #3a5566;
+  --head: 'Unbounded', sans-serif;
+  --mono: 'Space Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;display:flex;flex-direction:column}
+
+/* noise overlay */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:.4}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:rgba(5,7,9,.95);backdrop-filter:blur(20px);position:relative;z-index:10;flex-shrink:0}
+.logo{font-family:var(--head);font-size:16px;font-weight:900;letter-spacing:-1px;display:flex;align-items:center;gap:10px}
+.logo-icon{width:28px;height:28px;border:2px solid var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 15px rgba(0,255,136,.3)}
+.logo em{color:var(--green);font-style:normal}
+.logo sup{font-size:9px;color:var(--blue);font-family:var(--mono);font-weight:400;letter-spacing:1px;margin-left:2px}
+
+.header-center{display:flex;gap:6px}
+.src-pill{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid;cursor:default;transition:all .2s}
+.src-pill.pp{border-color:rgba(0,255,136,.3);color:var(--green);background:rgba(0,255,136,.05)}
+.src-pill.hr{border-color:rgba(255,140,0,.3);color:var(--orange);background:rgba(255,140,0,.05)}
+.src-pill.tt{border-color:rgba(0,170,255,.3);color:var(--blue);background:rgba(0,170,255,.05)}
+.src-pill.active{animation:srcpulse 2s infinite}
+@keyframes srcpulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.header-right{display:flex;align-items:center;gap:10px}
+.scan-btn{font-family:var(--head);font-size:10px;font-weight:600;padding:8px 18px;border-radius:3px;cursor:pointer;border:none;letter-spacing:.5px;transition:all .2s}
+.scan-btn.start{background:var(--green);color:#000}
+.scan-btn.start:hover{background:#00ffaa;box-shadow:0 0 20px rgba(0,255,136,.5)}
+.scan-btn.stop{background:var(--red);color:#fff}
+.scan-pill{font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;gap:5px}
+.scan-dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.scan-dot.live{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat{padding:10px 16px;border-right:1px solid var(--border);position:relative;overflow:hidden}
+.stat:last-child{border-right:none}
+.stat-val{font-family:var(--head);font-size:20px;font-weight:800;line-height:1;margin-bottom:3px}
+.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.g{color:var(--green)} .b{color:var(--blue)} .o{color:var(--orange)} .r{color:var(--red)} .y{color:var(--yellow)}
+
+/* ── MAIN LAYOUT ── */
+.main{display:grid;grid-template-columns:220px 1fr 300px;flex:1;overflow:hidden;min-height:0}
+
+/* ── SIDEBAR LEFT ── */
+.sidebar-l{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;background:var(--s1)}
+.panel{border-bottom:1px solid var(--border);padding:14px}
+.panel-title{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.panel-title::before{content:'';flex:1;height:1px;background:var(--border)}
+
+.field{margin-bottom:8px}
+.field label{display:block;font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 8px;border-radius:3px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.field input::placeholder{color:var(--muted)}
+
+.mini-btn{width:100%;font-family:var(--mono);font-size:10px;padding:6px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.mini-btn:hover{border-color:var(--green);color:var(--green)}
+.mini-btn.blue:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── CENTER ── */
+.center{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--s1);flex-shrink:0}
+.tab{padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.tab-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:9px;margin-left:5px;background:var(--s3)}
+.tab-badge.g{background:rgba(0,255,136,.15);color:var(--green)}
+
+.tab-pane{display:none;flex:1;overflow-y:auto}
+.tab-pane.active{display:flex;flex-direction:column}
+
+/* ── OPPORTUNITY CARDS ── */
+.opps-list{padding:12px;display:flex;flex-direction:column;gap:8px}
+.opp-card{background:var(--s1);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:all .2s}
+.opp-card:hover{border-color:rgba(0,255,136,.2);transform:translateX(2px)}
+.opp-card.pp-card{border-left:3px solid var(--green)}
+.opp-card.hr-card{border-left:3px solid var(--orange)}
+.opp-card.ai-card{border-left:3px solid var(--blue)}
+
+.opp-top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--s2)}
+.opp-match{font-family:var(--head);font-size:12px;font-weight:600}
+.opp-vs{color:var(--muted);margin:0 5px;font-size:10px}
+.opp-badges{display:flex;gap:5px;align-items:center}
+.badge{font-size:9px;padding:2px 7px;border-radius:2px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.badge-pp{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.badge-hr{background:rgba(255,140,0,.12);color:var(--orange);border:1px solid rgba(255,140,0,.25)}
+.badge-live{background:rgba(255,51,102,.12);color:var(--red);border:1px solid rgba(255,51,102,.25)}
+.badge-ai{background:rgba(0,170,255,.12);color:var(--blue);border:1px solid rgba(0,170,255,.25)}
+
+.opp-body{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:center}
+.opp-m{} 
+.opp-m-label{font-size:9px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
+.opp-m-val{font-size:12px}
+.opp-m-val.g{color:var(--green);font-weight:700}
+.opp-m-val.b{color:var(--blue)}
+.opp-m-val.o{color:var(--orange)}
+
+.ai-summary{padding:8px 12px;background:rgba(0,170,255,.03);border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6;font-style:italic}
+
+.alert-btn{font-family:var(--mono);font-size:9px;padding:5px 10px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap}
+.alert-btn:hover{border-color:var(--green);color:var(--green)}
+
+/* empty state */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 20px;text-align:center;color:var(--muted);flex:1}
+.empty-icon{font-size:36px;opacity:.3}
+.empty-title{font-family:var(--head);font-size:14px;color:var(--text);font-weight:600}
+.empty-sub{font-size:11px;max-width:260px;line-height:1.7}
+
+/* ── MATCHES TABLE ── */
+.matches-table{width:100%;border-collapse:collapse;font-size:11px}
+.matches-table th{padding:8px 14px;border-bottom:1px solid var(--border);color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:400;text-align:left;background:var(--s2);position:sticky;top:0}
+.matches-table td{padding:9px 14px;border-bottom:1px solid rgba(26,42,58,.5)}
+.matches-table tr:hover td{background:var(--s2)}
+.player-name{font-family:var(--head);font-size:11px;font-weight:600}
+.tournament-name{color:var(--muted);font-size:10px}
+.stat-chip{display:inline-flex;align-items:center;gap:4px;font-size:10px}
+.winner-tag{font-size:9px;padding:2px 6px;border-radius:2px;background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+
+/* ── LOG ── */
+.log-list{padding:10px 14px;display:flex;flex-direction:column;gap:2px}
+.log-row{display:flex;gap:10px;font-size:11px;line-height:1.7}
+.log-time{color:var(--muted);min-width:55px;flex-shrink:0;font-size:10px}
+.log-msg{}
+.log-msg.s{color:var(--green)}
+.log-msg.i{color:var(--blue)}
+.log-msg.w{color:var(--orange)}
+.log-msg.e{color:var(--red)}
+.log-msg.ai{color:var(--yellow)}
+
+/* ── SIDEBAR RIGHT (Telegram Chat) ── */
+.sidebar-r{border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--s1)}
+.chat-header{padding:12px 14px;border-bottom:1px solid var(--border);background:var(--s2);flex-shrink:0}
+.chat-title{font-family:var(--head);font-size:11px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.chat-sub{font-size:9px;color:var(--muted)}
+.tg-icon{width:24px;height:24px;background:linear-gradient(135deg,#2aabee,#229ed9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:85%;padding:8px 10px;border-radius:6px;font-size:11px;line-height:1.6;word-break:break-word}
+.msg.bot{background:var(--s3);border:1px solid var(--border);align-self:flex-start;border-radius:0 6px 6px 6px}
+.msg.user{background:rgba(0,170,255,.15);border:1px solid rgba(0,170,255,.2);align-self:flex-end;border-radius:6px 0 6px 6px}
+.msg-meta{font-size:9px;color:var(--muted);margin-top:4px}
+.msg.bot .msg-meta{text-align:left}
+.msg.user .msg-meta{text-align:right}
+.msg-thinking{display:flex;gap:4px;padding:4px 0}
+.dot-anim{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:dotbounce 1.2s infinite}
+.dot-anim:nth-child(2){animation-delay:.2s}
+.dot-anim:nth-child(3){animation-delay:.4s}
+@keyframes dotbounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+.chat-cmds{padding:8px 12px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap;background:var(--s2);flex-shrink:0}
+.cmd-chip{font-size:9px;padding:3px 8px;border-radius:12px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.cmd-chip:hover{border-color:var(--green);color:var(--green)}
+
+.chat-input-row{padding:10px 12px;display:flex;gap:6px;flex-shrink:0}
+.chat-input{flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:7px 10px;border-radius:3px;outline:none;transition:border-color .15s}
+.chat-input:focus{border-color:var(--blue)}
+.chat-input::placeholder{color:var(--muted)}
+.chat-send{background:var(--blue);border:none;color:#000;font-family:var(--mono);font-size:11px;font-weight:700;padding:7px 12px;border-radius:3px;cursor:pointer;transition:all .15s}
+.chat-send:hover{background:#22ccff;box-shadow:0 0 15px rgba(0,170,255,.4)}
+
+/* refresh bar */
+.refresh-bar{height:1px;background:var(--border);position:relative;overflow:hidden;flex-shrink:0}
+.refresh-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));width:0;transition:width 1s linear}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎾</div>
+    Tennis<em>Sense</em><sup>PRO</sup>
+  </div>
+  <div class="header-center">
+    <div class="src-pill pp" id="pill-pp">● PrizePicks</div>
+    <div class="src-pill hr" id="pill-hr">● HardRock</div>
+    <div class="src-pill tt" id="pill-tt">● Tennistonic</div>
+  </div>
+  <div class="header-right">
+    <div class="scan-pill"><div class="scan-dot" id="scanDot"></div><span id="scanStatus">IDLE</span></div>
+    <div class="scan-pill" id="countdownPill" style="display:none"><span id="countdownTxt">—</span></div>
+    <button class="scan-btn start" id="mainBtn" onclick="toggleScan()">▶ START</button>
+  </div>
+</header>
+
+<div class="refresh-bar"><div class="refresh-fill" id="rfill"></div></div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val g" id="stPP">0</div><div class="stat-label">PP Opps</div></div>
+  <div class="stat"><div class="stat-val o" id="stHR">0</div><div class="stat-label">HardRock Opps</div></div>
+  <div class="stat"><div class="stat-val b" id="stMatches">0</div><div class="stat-label">Matches</div></div>
+  <div class="stat"><div class="stat-val y" id="stAlerts">0</div><div class="stat-label">Alerts Sent</div></div>
+  <div class="stat"><div class="stat-val" id="stScans">0</div><div class="stat-label">Scans Done</div></div>
+  <div class="stat"><div class="stat-val g" id="stAI">0</div><div class="stat-label">AI Insights</div></div>
+</div>
+
+<div class="main">
+
+  <!-- SIDEBAR LEFT -->
+  <div class="sidebar-l">
+
+    <div class="panel">
+      <div class="panel-title">Telegram</div>
+      <div class="field"><label>Bot Token</label><input type="password" id="tgToken" placeholder="123456:AAFxxx..."></div>
+      <div class="field"><label>Chat ID</label><input type="text" id="tgChat" placeholder="8082026427"></div>
+      <button class="mini-btn blue" onclick="testTelegram()">📨 Test Connection</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Odds API</div>
+      <div class="field"><label>API Key</label><input type="password" id="oddsKey" placeholder="Your key..."></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Anthropic AI</div>
+      <div class="field"><label>API Key (for insights)</label><input type="password" id="aiKey" placeholder="sk-ant-..."></div>
+      <div style="font-size:9px;color:var(--muted);line-height:1.6;margin-top:4px">Powers /ask commands and match analysis. Get yours at console.anthropic.com</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">UTR (Optional)</div>
+      <div class="field"><label>Session Token (JWT)</label><input type="password" id="utrToken" placeholder="From browser cookies..."></div>
+      <div style="font-size:9px;color:var(--muted);line-height:1.6;margin-top:4px">Login to utrsports.net → F12 → Cookies → JWT value</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Detection</div>
+      <div class="field"><label>Min Edge %</label><input type="number" id="minEdge" value="5" step="0.5"></div>
+      <div class="field"><label>Scan Interval (sec)</label><input type="number" id="scanInt" value="60" step="10" min="30"></div>
+    </div>
+
+    <div class="panel" style="flex:1">
+      <div class="panel-title">Commands</div>
+      <div style="font-size:10px;color:var(--muted);line-height:2">
+        <div><span style="color:var(--green)">/start</span> — start scanner</div>
+        <div><span style="color:var(--red)">/stop</span> — stop scanner</div>
+        <div><span style="color:var(--blue)">/status</span> — current opps</div>
+        <div><span style="color:var(--yellow)">/ask [question]</span> — AI insight</div>
+        <div><span style="color:var(--orange)">/matches</span> — list matches</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center">
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('opps')">Opportunities <span class="tab-badge g" id="oppsBadge">0</span></div>
+      <div class="tab" onclick="switchTab('matches')">Matches <span class="tab-badge" id="matchBadge">0</span></div>
+      <div class="tab" onclick="switchTab('log')">Activity Log</div>
+    </div>
+
+    <!-- Opportunities -->
+    <div class="tab-pane active" id="pane-opps">
+      <div class="opps-list" id="oppsList">
+        <div class="empty">
+          <div class="empty-icon">🎾</div>
+          <div class="empty-title">Scanner Ready</div>
+          <div class="empty-sub">Configure your Telegram token and Chat ID, then press START to begin scanning PrizePicks and HardRock for tennis opportunities.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Matches -->
+    <div class="tab-pane" id="pane-matches">
+      <table class="matches-table">
+        <thead>
+          <tr>
+            <th>Match</th>
+            <th>Source</th>
+            <th>Line / Prop</th>
+            <th>Edge %</th>
+            <th>AI Pick</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="matchesTbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">No data yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Log -->
+    <div class="tab-pane" id="pane-log">
+      <div class="log-list" id="logList">
+        <div class="log-row"><span class="log-time">--:--:--</span><span class="log-msg i">TennisSense PRO ready. Configure credentials and start scanning.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR RIGHT - Telegram Chat -->
+  <div class="sidebar-r">
+    <div class="chat-header">
+      <div class="chat-title"><div class="tg-icon">✈</div>Telegram Chat</div>
+      <div class="chat-sub">Talk to your bot — commands and AI insights</div>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="msg bot">
+        👋 <b>TennisSense PRO</b> online.<br><br>
+        Commands:<br>
+        /start — begin scanning<br>
+        /stop — stop scanning<br>
+        /status — current opportunities<br>
+        /matches — list active matches<br>
+        /ask [question] — AI insight
+        <div class="msg-meta">TennisSense</div>
+      </div>
+    </div>
+    <div class="chat-cmds">
+      <div class="cmd-chip" onclick="sendCmd('/start')">/start</div>
+      <div class="cmd-chip" onclick="sendCmd('/stop')">/stop</div>
+      <div class="cmd-chip" onclick="sendCmd('/status')">/status</div>
+      <div class="cmd-chip" onclick="sendCmd('/matches')">/matches</div>
+      <div class="cmd-chip" onclick="sendCmd('/ask who has the edge today?')">/ask</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Type a command or question..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">→</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let scanning = false, scanTimer = null, cdTimer = null, cdVal = 60;
+let stats = {pp:0,hr:0,matches:0,alerts:0,scans:0,ai:0};
+let opportunities = [], allMatches = [], tgOffset = 0;
+let pollTimer = null;
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['opps','matches','log'][i]===name));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+name));
+}
+
+// ─── Logging ──────────────────────────────────────────────────────────────────
+function log(msg,type='i'){
+  const t=new Date().toTimeString().slice(0,8);
+  const el=document.createElement('div');
+  el.className='log-row';
+  el.innerHTML=`<span class="log-time">${t}</span><span class="log-msg ${type}">${msg}</span>`;
+  const list=document.getElementById('logList');
+  list.prepend(el);
+  if(list.children.length>200)list.lastChild.remove();
+}
+
+// ─── Chat UI ──────────────────────────────────────────────────────────────────
+function addChatMsg(text,role='bot'){
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const el=document.createElement('div');
+  el.className=`msg ${role}`;
+  el.innerHTML=`${text}<div class="msg-meta">${role==='bot'?'TennisSense':' You'} · ${t}</div>`;
+  const msgs=document.getElementById('chatMsgs');
+  msgs.appendChild(el);
+  msgs.scrollTop=msgs.scrollHeight;
+  return el;
+}
+
+function showThinking(){
+  const el=document.createElement('div');
+  el.className='msg bot';
+  el.id='thinking';
+  el.innerHTML='<div class="msg-thinking"><div class="dot-anim"></div><div class="dot-anim"></div><div class="dot-anim"></div></div>';
+  document.getElementById('chatMsgs').appendChild(el);
+  document.getElementById('chatMsgs').scrollTop=99999;
+  return el;
+}
+
+function sendChat(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text)return;
+  input.value='';
+  addChatMsg(text,'user');
+  handleCommand(text);
+}
+
+function sendCmd(cmd){
+  document.getElementById('chatInput').value=cmd;
+  sendChat();
+}
+
+// ─── Command Handler ──────────────────────────────────────────────────────────
+async function handleCommand(text){
+  const cmd=text.toLowerCase().trim();
+  if(cmd==='/start'){
+    if(!scanning){startScan();addChatMsg('🟢 Scanner started! Scanning PrizePicks and HardRock for tennis opportunities...');}
+    else addChatMsg('⚠️ Scanner is already running.');
+  } else if(cmd==='/stop'){
+    if(scanning){stopScan();addChatMsg('🔴 Scanner stopped.');}
+    else addChatMsg('⚠️ Scanner is not running.');
+  } else if(cmd==='/status'){
+    const msg=opportunities.length>0
+      ? `📊 <b>Status Report</b>\n\nFound <b>${opportunities.length}</b> opportunities:\n${opportunities.slice(0,3).map(o=>`• ${o.match} — ${o.type} (${o.source})`).join('\n')}\n\nScans done: ${stats.scans}\nAlerts sent: ${stats.alerts}`
+      : `📊 <b>Status</b>\n\nScanner ${scanning?'🟢 running':'🔴 stopped'}\nNo opportunities found yet.\nScans done: ${stats.scans}`;
+    addChatMsg(msg);
+  } else if(cmd==='/matches'){
+    if(allMatches.length===0){addChatMsg('No matches loaded yet. Start the scanner first.');return;}
+    const list=allMatches.slice(0,8).map(m=>`• ${m.home} vs ${m.away} (${m.source})`).join('\n');
+    addChatMsg(`🎾 <b>Active Matches (${allMatches.length})</b>\n\n${list}`);
+  } else if(cmd.startsWith('/ask ')){
+    const question=text.slice(5).trim();
+    await handleAIQuestion(question);
+  } else {
+    // Free text — treat as AI question
+    await handleAIQuestion(text);
+  }
+}
+
+// ─── AI Question Handler ──────────────────────────────────────────────────────
+async function handleAIQuestion(question){
+  const apiKey=document.getElementById('aiKey').value.trim();
+  if(!apiKey){
+    addChatMsg('⚠️ No Anthropic API key configured. Add it in the sidebar to enable AI insights.');
+    return;
+  }
+  const thinking=showThinking();
+  stats.ai++;document.getElementById('stAI').textContent=stats.ai;
+  log(`AI question: ${question}`,'ai');
+
+  // Build context from current matches + opportunities
+  const matchContext=allMatches.slice(0,10).map(m=>
+    `${m.home} vs ${m.away} | Source: ${m.source} | ${m.extra||''}`
+  ).join('\n');
+  const oppContext=opportunities.slice(0,5).map(o=>
+    `${o.match} | ${o.type} | Edge: ${o.edge||'N/A'} | Source: ${o.source}`
+  ).join('\n');
+
+  const systemPrompt=`You are TennisSense, an elite tennis betting analyst AI. You have deep expertise in:
+- UTR rating analysis and what rating gaps mean for match outcomes
+- Surface-specific win rates (clay, grass, hard court)
+- Head-to-head historical patterns
+- Recent form analysis (last 5 matches)
+- PrizePicks prop bet analysis for tennis (aces, games won, sets)
+- HardRock sportsbook line analysis
+- Statistical edge identification
+
+Current live matches:\n${matchContext||'None loaded yet'}
+
+Current opportunities:\n${oppContext||'None found yet'}
+
+Provide concise, data-driven analysis. Be specific with numbers and percentages when possible. Always conclude with a clear recommendation.`;
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:600,
+        system:systemPrompt,
+        messages:[{role:'user',content:question}]
+      })
+    });
+    const data=await res.json();
+    thinking.remove();
+    const reply=data.content?.[0]?.text||'Unable to get response.';
+    addChatMsg(reply);
+    log(`AI responded to: ${question.slice(0,40)}...`,'ai');
+    // Also send to Telegram
+    await sendTelegram(`🧠 <b>AI Insight</b>\n\n❓ ${question}\n\n${reply}`);
+  } catch(e){
+    thinking.remove();
+    addChatMsg(`Error getting AI response: ${e.message}`);
+    log(`AI error: ${e.message}`,'e');
+  }
+}
+
+// ─── Scanner ──────────────────────────────────────────────────────────────────
+function toggleScan(){scanning?stopScan():startScan();}
+
+function startScan(){
+  const tgt=document.getElementById('tgToken').value.trim();
+  const tgc=document.getElementById('tgChat').value.trim();
+  if(!tgt||!tgc){
+    alert('Please enter your Telegram Bot Token and Chat ID first.');return;
+  }
+  scanning=true;
+  document.getElementById('mainBtn').textContent='⏹ STOP';
+  document.getElementById('mainBtn').className='scan-btn stop';
+  document.getElementById('scanDot').classList.add('live');
+  document.getElementById('scanStatus').textContent='LIVE';
+  document.getElementById('pill-pp').classList.add('active');
+  document.getElementById('pill-hr').classList.add('active');
+  document.getElementById('pill-tt').classList.add('active');
+  log('Scanner started.','s');
+  sendTelegram('🟢 <b>TennisSense PRO</b> scanner started.\n\nScanning PrizePicks + HardRock for tennis opportunities...');
+  startTelegramPoll();
+  runScan();
+}
+
+function stopScan(){
+  scanning=false;
+  clearTimeout(scanTimer);clearInterval(cdTimer);clearTimeout(pollTimer);
+  document.getElementById('mainBtn').textContent='▶ START';
+  document.getElementById('mainBtn').className='scan-btn start';
+  document.getElementById('scanDot').classList.remove('live');
+  document.getElementById('scanStatus').textContent='IDLE';
+  document.getElementById('countdownPill').style.display='none';
+  document.getElementById('pill-pp').classList.remove('active');
+  document.getElementById('pill-hr').classList.remove('active');
+  document.getElementById('pill-tt').classList.remove('active');
+  document.getElementById('rfill').style.width='0%';
+  log('Scanner stopped.','w');
+}
+
+async function runScan(){
+  if(!scanning)return;
+  stats.scans++;document.getElementById('stScans').textContent=stats.scans;
+  log('Starting scan cycle...','i');
+
+  const results=[];
+
+  // 1. Fetch PrizePicks tennis props
+  try {
+    log('Fetching PrizePicks tennis projections...','i');
+    document.getElementById('pill-pp').style.opacity='.5';
+    const ppData=await fetchPrizePicks();
+    document.getElementById('pill-pp').style.opacity='1';
+    if(ppData.length>0){
+      log(`PrizePicks: ${ppData.length} tennis projections found.`,'s');
+      results.push(...ppData);
+    } else {
+      log('PrizePicks: No tennis projections at this time.','w');
+    }
+  } catch(e){log(`PrizePicks error: ${e.message}`,'e');document.getElementById('pill-pp').style.opacity='1';}
+
+  // 2. Fetch HardRock via Odds API
+  try {
+    const key=document.getElementById('oddsKey').value.trim();
+    if(key){
+      log('Fetching HardRock / Odds API data...','i');
+      document.getElementById('pill-hr').style.opacity='.5';
+      const hrData=await fetchOddsAPI(key);
+      document.getElementById('pill-hr').style.opacity='1';
+      if(hrData.length>0){
+        log(`Odds API: ${hrData.length} tennis matches found.`,'s');
+        results.push(...hrData);
+      }
+    } else {
+      log('Odds API key not set — skipping HardRock data.','w');
+    }
+  } catch(e){log(`Odds API error: ${e.message}`,'e');document.getElementById('pill-hr').style.opacity='1';}
+
+  // 3. Fetch Tennistonic predictions
+  try {
+    log('Fetching Tennistonic predictions...','i');
+    document.getElementById('pill-tt').style.opacity='.5';
+    const ttData=await fetchTennistonic();
+    document.getElementById('pill-tt').style.opacity='1';
+    log(`Tennistonic: ${ttData.length} predictions loaded.`,'s');
+    // Enrich results with tennistonic data
+    enrichWithTennistonic(results, ttData);
+  } catch(e){log(`Tennistonic error: ${e.message}`,'e');document.getElementById('pill-tt').style.opacity='1';}
+
+  // Update stats
+  stats.matches=results.length;
+  document.getElementById('stMatches').textContent=stats.matches;
+  document.getElementById('matchBadge').textContent=stats.matches;
+  allMatches=results;
+
+  // Render matches table
+  renderMatchesTable(results);
+
+  // Analyze with AI and find opportunities
+  const opps=await analyzeOpportunities(results);
+  if(opps.length>0){
+    opportunities=[...opps,...opportunities].slice(0,50);
+    renderOpportunities();
+    for(const opp of opps){
+      await alertOpportunity(opp);
+    }
+  } else {
+    log('No qualifying opportunities this scan.','i');
+  }
+
+  // Start countdown
+  const interval=parseInt(document.getElementById('scanInt').value)||60;
+  startCountdown(interval);
+  scanTimer=setTimeout(runScan,interval*1000);
+}
+
+// ─── PrizePicks ───────────────────────────────────────────────────────────────
+async function fetchPrizePicks(){
+  // Tennis league IDs on PrizePicks: ATP=6, WTA varies
+  const url='https://partner-api.prizepicks.com/projections?per_page=250&single_stat=true';
+  const res=await fetch(url,{headers:{'Content-Type':'application/json'}});
+  if(!res.ok)throw new Error(`PrizePicks ${res.status}`);
+  const data=await res.json();
+
+  const tennisProjections=[];
+  const players={};
+
+  // Build player lookup
+  if(data.included){
+    data.included.forEach(item=>{
+      if(item.type==='new_player'){
+        players[item.id]={
+          name:item.attributes?.name||'Unknown',
+          team:item.attributes?.team||'',
+          league:item.attributes?.league||''
+        };
+      }
+    });
+  }
+
+  // Filter tennis projections
+  if(data.data){
+    data.data.forEach(proj=>{
+      const attrs=proj.attributes||{};
+      const league=(attrs.league||'').toUpperCase();
+      if(!['ATP','WTA','ITF','TENNIS'].some(l=>league.includes(l)))return;
+
+      const playerId=proj.relationships?.new_player?.data?.id;
+      const player=players[playerId]||{name:'Unknown',team:''};
+
+      tennisProjections.push({
+        source:'PrizePicks',
+        type:'prop',
+        home:player.name,
+        away:attrs.description||'Opponent',
+        prop:attrs.stat_type||'Games Won',
+        line:attrs.line_score||0,
+        match:`${player.name} — ${attrs.stat_type||'Games Won'} ${attrs.line_score||0}`,
+        extra:`${attrs.stat_type} O/U ${attrs.line_score}`,
+        id:proj.id,
+        raw:attrs
+      });
+    });
+  }
+  return tennisProjections;
+}
+
+// ─── Odds API / HardRock ──────────────────────────────────────────────────────
+async function fetchOddsAPI(key){
+  const url=`https://api.the-odds-api.com/v4/sports/tennis/odds/?apiKey=${key}&regions=us&markets=h2h&oddsFormat=decimal`;
+  const res=await fetch(url);
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||`API ${res.status}`);}
+  const data=await res.json();
+
+  return data.map(m=>{
+    let bestHome=0,bestAway=0,hrHome=0,hrAway=0;
+    for(const bm of(m.bookmakers||[])){
+      const mkt=bm.markets?.find(x=>x.key==='h2h');
+      if(!mkt)continue;
+      for(const o of mkt.outcomes){
+        if(o.name===m.home_team){if(o.price>bestHome)bestHome=o.price;if(bm.key==='hardrockbet')hrHome=o.price;}
+        if(o.name===m.away_team){if(o.price>bestAway)bestAway=o.price;if(bm.key==='hardrockbet')hrAway=o.price;}
+      }
+    }
+    const implSum=bestHome&&bestAway?(1/bestHome+1/bestAway):null;
+    const edge=implSum?((1/implSum-1)*100):0;
+    return {
+      source:'HardRock/OddsAPI',type:'moneyline',
+      home:m.home_team,away:m.away_team,
+      match:`${m.home_team} vs ${m.away_team}`,
+      bestHome,bestAway,hrHome,hrAway,edge,
+      extra:`${m.home_team}@${bestHome.toFixed(2)} | ${m.away_team}@${bestAway.toFixed(2)}`,
+      commence:m.commence_time
+    };
+  });
+}
+
+// ─── Tennistonic ──────────────────────────────────────────────────────────────
+async function fetchTennistonic(){
+  // Fetch predictions page
+  const res=await fetch('https://tennistonic.com/head-to-head/');
+  if(!res.ok)throw new Error(`Tennistonic ${res.status}`);
+  const html=await res.text();
+  const parser=new DOMParser();
+  const doc=parser.parseFromString(html,'text/html');
+
+  const predictions=[];
+  // Parse match rows - Tennistonic uses various table/div structures
+  const rows=doc.querySelectorAll('.match-row, .prediction-row, table tr, .h2h-row');
+  rows.forEach(row=>{
+    const text=row.textContent.trim();
+    if(text.length>10&&text.includes('vs'||' - ')){
+      predictions.push({text,html:row.innerHTML});
+    }
+  });
+  // If no structured data, return page signals
+  return predictions.length>0?predictions:[{text:'Tennistonic data loaded',html:''}];
+}
+
+function enrichWithTennistonic(results,ttData){
+  // Tag matches with Tennistonic signal if player names match
+  results.forEach(r=>{
+    const ttMatch=ttData.find(t=>
+      t.text&&(t.text.includes(r.home)||t.text.includes(r.away))
+    );
+    if(ttMatch)r.ttSignal=ttMatch.text.slice(0,100);
+  });
+}
+
+// ─── Analyze Opportunities ────────────────────────────────────────────────────
+async function analyzeOpportunities(matches){
+  const minEdge=parseFloat(document.getElementById('minEdge').value)||5;
+  const opps=[];
+
+  for(const m of matches){
+    // Value bet detection for HardRock/OddsAPI
+    if(m.source==='HardRock/OddsAPI'&&m.edge>=minEdge){
+      const opp={
+        match:m.match,type:'Value Bet',source:'HardRock',
+        edge:m.edge.toFixed(1),
+        detail:`Best odds: ${m.home}@${m.bestHome.toFixed(2)} | ${m.away}@${m.bestAway.toFixed(2)}`,
+        ttSignal:m.ttSignal||null,
+        id:Date.now()+Math.random()
+      };
+      // Get AI analysis if key available
+      const aiKey=document.getElementById('aiKey').value.trim();
+      if(aiKey){
+        opp.aiInsight=await getQuickAIInsight(m,aiKey);
+        stats.ai++;document.getElementById('stAI').textContent=stats.ai;
+      }
+      opps.push(opp);
+      stats.hr++;document.getElementById('stHR').textContent=stats.hr;
+    }
+
+    // PrizePicks prop analysis
+    if(m.source==='PrizePicks'&&m.line){
+      const aiKey=document.getElementById('aiKey').value.trim();
+      let aiInsight=null;
+      if(aiKey){
+        aiInsight=await getQuickPropInsight(m,aiKey);
+        stats.ai++;document.getElementById('stAI').textContent=stats.ai;
+      }
+      if(aiInsight&&aiInsight.confidence==='HIGH'){
+        opps.push({
+          match:m.match,type:'PP Prop',source:'PrizePicks',
+          edge:'AI',detail:`${m.prop} O/U ${m.line}`,
+          aiInsight:aiInsight.text,
+          recommendation:aiInsight.pick,
+          id:Date.now()+Math.random()
+        });
+        stats.pp++;document.getElementById('stPP').textContent=stats.pp;
+      }
+    }
+  }
+  return opps;
+}
+
+async function getQuickAIInsight(match,apiKey){
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:150,
+        messages:[{role:'user',content:`Tennis betting analysis. Match: ${match.home} vs ${match.away}. Odds: ${match.home}@${match.bestHome?.toFixed(2)} vs ${match.away}@${match.bestAway?.toFixed(2)}. ${match.ttSignal?'Tennistonic signal: '+match.ttSignal:''} Give a 2-sentence edge analysis and who to back. Be direct.`}]
+      })
+    });
+    const data=await res.json();
+    return data.content?.[0]?.text||null;
+  } catch{return null;}
+}
+
+async function getQuickPropInsight(match,apiKey){
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:120,
+        messages:[{role:'user',content:`PrizePicks tennis prop: ${match.home} — ${match.prop} line ${match.line}. Should I go OVER or UNDER? Rate confidence as HIGH/MEDIUM/LOW. Reply in JSON: {"pick":"OVER/UNDER","confidence":"HIGH/MEDIUM/LOW","text":"one sentence reason"}`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'{}';
+    try{return JSON.parse(text.replace(/```json|```/g,'').trim());}
+    catch{return {confidence:'LOW',text:text};}
+  } catch{return null;}
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderOpportunities(){
+  const container=document.getElementById('oppsList');
+  document.getElementById('oppsBadge').textContent=opportunities.length;
+  document.getElementById('oppsBadge').className=`tab-badge ${opportunities.length>0?'g':''}`;
+  if(opportunities.length===0)return;
+  container.innerHTML=opportunities.map((opp,i)=>{
+    const cardClass=opp.source==='PrizePicks'?'pp-card':opp.source.includes('Hard')?'hr-card':'ai-card';
+    const badgeClass=opp.source==='PrizePicks'?'badge-pp':opp.source.includes('Hard')?'badge-hr':'badge-ai';
+    return `
+    <div class="opp-card ${cardClass}">
+      <div class="opp-top">
+        <div class="opp-match">${opp.match}</div>
+        <div class="opp-badges">
+          <span class="badge ${badgeClass}">${opp.source}</span>
+          <span class="badge badge-ai">${opp.type}</span>
+        </div>
+      </div>
+      <div class="opp-body">
+        <div class="opp-m"><div class="opp-m-label">Detail</div><div class="opp-m-val">${opp.detail||'—'}</div></div>
+        <div class="opp-m"><div class="opp-m-label">Edge</div><div class="opp-m-val g">${opp.edge||'—'}${opp.edge&&opp.edge!=='AI'?'%':''}</div></div>
+        <div class="opp-m"><div class="opp-m-label">AI Pick</div><div class="opp-m-val b">${opp.recommendation||'See analysis'}</div></div>
+        <button class="alert-btn" onclick="manualAlert(${i})">📨 Alert</button>
+      </div>
+      ${opp.aiInsight?`<div class="ai-summary">🧠 ${opp.aiInsight}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderMatchesTable(matches){
+  const tbody=document.getElementById('matchesTbody');
+  if(!matches.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">No data.</td></tr>';return;}
+  tbody.innerHTML=matches.slice(0,50).map(m=>`
+    <tr>
+      <td><div class="player-name">${m.home}</div><div class="tournament-name">vs ${m.away}</div></td>
+      <td><span class="badge ${m.source==='PrizePicks'?'badge-pp':'badge-hr'}">${m.source}</span></td>
+      <td>${m.extra||'—'}</td>
+      <td class="${m.edge>5?'g':''}">${m.edge?m.edge.toFixed(1)+'%':'—'}</td>
+      <td>${m.ttSignal?'<span class="winner-tag">Signal</span>':'—'}</td>
+      <td><button class="alert-btn" onclick="askAboutMatch('${m.home.replace(/'/g,"\\'")} vs ${m.away.replace(/'/g,"\\'")}')">Ask AI</button></td>
+    </tr>
+  `).join('');
+}
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+async function alertOpportunity(opp){
+  const msg=`🎾 <b>TennisSense Alert</b>\n─────────────────\n${opp.source==='PrizePicks'?'🟢':'🟠'} <b>${opp.type}</b>\n\n${opp.match}\n\n📊 ${opp.detail}\n${opp.edge&&opp.edge!=='AI'?`\n📈 Edge: +${opp.edge}%`:''}${opp.recommendation?`\n✅ Pick: <b>${opp.recommendation}</b>`:''}${opp.aiInsight?`\n\n🧠 ${opp.aiInsight}`:''}\n─────────────────\n⏱ ${new Date().toLocaleTimeString()}`;
+  await sendTelegram(msg);
+  stats.alerts++;document.getElementById('stAlerts').textContent=stats.alerts;
+  addChatMsg(msg.replace(/<[^>]+>/g,''));
+  log(`Alert sent: ${opp.match}`,'s');
+}
+
+async function manualAlert(idx){
+  const opp=opportunities[idx];
+  if(!opp)return;
+  log('Sending manual alert...','i');
+  await alertOpportunity(opp);
+}
+
+function askAboutMatch(match){
+  document.getElementById('chatInput').value=`/ask Analyze this match: ${match}`;
+  sendChat();
+  switchTab('opps');
+}
+
+// ─── Telegram Send ────────────────────────────────────────────────────────────
+async function sendTelegram(text){
+  const token=document.getElementById('tgToken').value.trim();
+  const chatId=document.getElementById('tgChat').value.trim();
+  if(!token||!chatId)return false;
+  try {
+    const plain=text.replace(/<[^>]+>/g,'');
+    const url=`https://api.telegram.org/bot${token}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(plain)}`;
+    const res=await fetch(url);
+    const data=await res.json();
+    return data.ok;
+  } catch{return false;}
+}
+
+async function testTelegram(){
+  log('Testing Telegram connection...','i');
+  const ok=await sendTelegram('🎾 TennisSense PRO - Connection test successful! Bot is online and ready.');
+  if(ok){log('Telegram connected!','s');addChatMsg('✅ Telegram connected! Test message sent.');}
+  else{log('Telegram test failed. Check token and chat ID.','e');addChatMsg('❌ Telegram test failed. Check your token and chat ID.');}
+}
+
+// ─── Telegram Polling (receive commands) ─────────────────────────────────────
+async function startTelegramPoll(){
+  if(!scanning)return;
+  const token=document.getElementById('tgToken').value.trim();
+  const chatId=document.getElementById('tgChat').value.trim();
+  if(!token||!chatId)return;
+  try {
+    const url=`https://api.telegram.org/bot${token}/getUpdates?offset=${tgOffset+1}&timeout=3`;
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data.ok&&data.result?.length>0){
+      for(const update of data.result){
+        tgOffset=update.update_id;
+        const msgText=update.message?.text;
+        const fromChat=update.message?.chat?.id?.toString();
+        if(msgText&&fromChat===chatId){
+          log(`Received from Telegram: ${msgText}`,'i');
+          addChatMsg(msgText,'user');
+          handleCommand(msgText);
+        }
+      }
+    }
+  } catch{}
+  if(scanning)pollTimer=setTimeout(startTelegramPoll,3000);
+}
+
+// ─── Countdown ────────────────────────────────────────────────────────────────
+function startCountdown(seconds){
+  clearInterval(cdTimer);
+  cdVal=seconds;
+  const fill=document.getElementById('rfill');
+  const txt=document.getElementById('countdownTxt');
+  document.getElementById('countdownPill').style.display='flex';
+  fill.style.transition='none';fill.style.width='100%';
+  setTimeout(()=>{fill.style.transition=`width ${seconds}s linear`;fill.style.width='0%';},50);
+  cdTimer=setInterval(()=>{
+    cdVal--;txt.textContent=`Next: ${cdVal}s`;
+    if(cdVal<=0)clearInterval(cdTimer);
+  },1000);
+  txt.textContent=`Next: ${seconds}s`;
+}
+
+// Prefill saved values
+window.onload=()=>{
+  document.getElementById('tgToken').value='8583928237:AAGUVpmaTF389YQlICLxOQeCkLRw7jmO7r4';
+  document.getElementById('tgChat').value='8082026427';
+};
+</script>
+</body>
+</html>
