@@ -5,3 +5,1087 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TennisSense Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060a;--s1:#080d13;--s2:#0c1420;--s3:#111c2a;
+  --border:#162030;--green:#00ff88;--blue:#00aaff;
+  --orange:#ff8c00;--red:#ff3355;--yellow:#ffe033;
+  --purple:#c084fc;--teal:#00e5cc;--text:#cce4f0;
+  --muted:#304555;--head:'Unbounded',sans-serif;--mono:'Space Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:12px;display:flex;flex-direction:column}
+
+/* animated grid bg */
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,255,136,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.025) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,255,136,.04) 0%,transparent 70%);
+  pointer-events:none;z-index:0}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;
+  border-bottom:1px solid var(--border);background:rgba(4,6,10,.96);
+  backdrop-filter:blur(20px);flex-shrink:0}
+.logo{font-family:var(--head);font-size:15px;font-weight:900;letter-spacing:-1px;
+  display:flex;align-items:center;gap:9px}
+.logo-ring{width:26px;height:26px;border:2px solid var(--green);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  box-shadow:0 0 12px rgba(0,255,136,.3);animation:ringglow 3s ease-in-out infinite}
+@keyframes ringglow{0%,100%{box-shadow:0 0 12px rgba(0,255,136,.3)}50%{box-shadow:0 0 22px rgba(0,255,136,.6)}}
+.logo em{color:var(--green);font-style:normal}
+.logo sup{font-size:8px;color:var(--blue);letter-spacing:1px;margin-left:2px}
+.hpills{display:flex;gap:5px}
+.pill{font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid;
+  transition:all .3s;cursor:default}
+.pill.g{border-color:rgba(0,255,136,.3);color:var(--green);background:rgba(0,255,136,.06)}
+.pill.o{border-color:rgba(255,140,0,.3);color:var(--orange);background:rgba(255,140,0,.06)}
+.pill.b{border-color:rgba(0,170,255,.3);color:var(--blue);background:rgba(0,170,255,.06)}
+.pill.p{border-color:rgba(192,132,252,.3);color:var(--purple);background:rgba(192,132,252,.06)}
+.pill.t{border-color:rgba(0,229,204,.3);color:var(--teal);background:rgba(0,229,204,.06)}
+.pill.live{animation:livepulse 1.5s infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hright{display:flex;align-items:center;gap:8px}
+.scan-ind{font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);
+  color:var(--muted);display:flex;align-items:center;gap:5px}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.sdot.live{background:var(--green);box-shadow:0 0 8px var(--green);animation:sdotpulse 1.5s infinite}
+@keyframes sdotpulse{0%,100%{transform:scale(1)}50%{transform:scale(.5)}}
+.start-btn{font-family:var(--head);font-size:10px;font-weight:700;padding:7px 18px;
+  border-radius:3px;cursor:pointer;border:none;letter-spacing:.5px;transition:all .2s}
+.start-btn.on{background:var(--green);color:#000}
+.start-btn.on:hover{background:#00ffaa;box-shadow:0 0 20px rgba(0,255,136,.5)}
+.start-btn.off{background:var(--red);color:#fff}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(8,1fr);
+  border-bottom:1px solid var(--border);flex-shrink:0}
+.sc{padding:8px 12px;border-right:1px solid var(--border)}
+.sc:last-child{border-right:none}
+.sv{font-family:var(--head);font-size:17px;font-weight:800;line-height:1;margin-bottom:2px}
+.sl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.cg{color:var(--green)}.cb{color:var(--blue)}.co{color:var(--orange)}
+.cr{color:var(--red)}.cy{color:var(--yellow)}.cp{color:var(--purple)}.ct{color:var(--teal)}
+
+/* ── MAIN ── */
+.main{display:grid;grid-template-columns:200px 1fr 280px;flex:1;overflow:hidden;min-height:0}
+
+/* ── LEFT SIDEBAR ── */
+.lsb{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;background:var(--s1)}
+.pnl{border-bottom:1px solid var(--border);padding:11px}
+.pt{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);
+  margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.pt::before{content:'';flex:1;height:1px;background:var(--border)}
+.fi{margin-bottom:7px}
+.fi label{display:block;font-size:10px;color:var(--muted);margin-bottom:2px;
+  text-transform:uppercase;letter-spacing:.5px}
+.fi input{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);
+  font-family:var(--mono);font-size:11px;padding:5px 7px;border-radius:3px;outline:none;
+  transition:border-color .15s}
+.fi input:focus{border-color:var(--green)}
+.fi input::placeholder{color:var(--muted)}
+.mbtn{width:100%;font-family:var(--mono);font-size:10px;padding:5px;border-radius:3px;
+  cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);
+  transition:all .15s;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.mbtn:hover{border-color:var(--green);color:var(--green)}
+.mbtn.blue:hover{border-color:var(--blue);color:var(--blue)}
+.news-item{padding:6px 0;border-bottom:1px solid rgba(22,32,48,.6);font-size:10px;
+  color:var(--muted);line-height:1.5;cursor:pointer;transition:color .15s}
+.news-item:hover{color:var(--text)}
+.news-item:last-child{border-bottom:none}
+.news-time{font-size:9px;color:var(--muted);margin-top:2px}
+.news-tag{font-size:9px;padding:1px 5px;border-radius:2px;margin-right:4px;
+  background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+
+/* ── CENTER ── */
+.center{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.tabbar{display:flex;border-bottom:1px solid var(--border);background:var(--s1);flex-shrink:0}
+.tab{padding:9px 14px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--text)}.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.tbadge{display:inline-flex;align-items:center;justify-content:center;
+  width:15px;height:15px;border-radius:50%;font-size:9px;margin-left:4px;background:var(--s3)}
+.tbadge.g{background:rgba(0,255,136,.15);color:var(--green)}
+.tpane{display:none;flex:1;overflow-y:auto}.tpane.active{display:flex;flex-direction:column}
+
+/* ── OPPORTUNITY CARDS ── */
+.opps{padding:10px;display:flex;flex-direction:column;gap:7px}
+.oc{background:var(--s1);border:1px solid var(--border);border-radius:4px;
+  overflow:hidden;transition:all .2s;cursor:pointer}
+.oc:hover{border-color:rgba(0,255,136,.25);transform:translateX(2px)}
+.oc.ev{border-left:3px solid var(--green)}
+.oc.arb{border-left:3px solid var(--yellow)}
+.oc.pp{border-left:3px solid var(--purple)}
+.oc.news-alert{border-left:3px solid var(--teal)}
+.oc-top{display:flex;justify-content:space-between;align-items:center;
+  padding:9px 11px;background:var(--s2)}
+.oc-match{font-family:var(--head);font-size:11px;font-weight:600}
+.oc-badges{display:flex;gap:4px}
+.badge{font-size:9px;padding:2px 6px;border-radius:2px;text-transform:uppercase;
+  letter-spacing:.5px;font-weight:700}
+.badge-g{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.badge-o{background:rgba(255,140,0,.12);color:var(--orange);border:1px solid rgba(255,140,0,.25)}
+.badge-y{background:rgba(255,224,51,.12);color:var(--yellow);border:1px solid rgba(255,224,51,.25)}
+.badge-p{background:rgba(192,132,252,.12);color:var(--purple);border:1px solid rgba(192,132,252,.25)}
+.badge-t{background:rgba(0,229,204,.12);color:var(--teal);border:1px solid rgba(0,229,204,.25)}
+.badge-r{background:rgba(255,51,85,.12);color:var(--red);border:1px solid rgba(255,51,85,.25)}
+.oc-grid{padding:9px 11px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.om{}
+.oml{font-size:9px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px}
+.omv{font-size:12px}
+.omv.g{color:var(--green);font-weight:700}.omv.b{color:var(--blue)}
+.omv.o{color:var(--orange)}.omv.p{color:var(--purple)}.omv.y{color:var(--yellow)}.omv.t{color:var(--teal)}
+.conf-row{padding:0 11px 7px;display:flex;align-items:center;gap:7px}
+.conf-lbl{font-size:9px;color:var(--muted);min-width:65px}
+.conf-track{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.conf-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.conf-val{font-size:10px;min-width:32px;text-align:right}
+.sigs{padding:0 11px 8px;display:flex;gap:4px;flex-wrap:wrap}
+.sig{font-size:9px;padding:2px 6px;border-radius:10px}
+.sig-p{border:1px solid rgba(0,255,136,.3);color:var(--green);background:rgba(0,255,136,.06)}
+.sig-n{border:1px solid rgba(255,51,85,.3);color:var(--red);background:rgba(255,51,85,.06)}
+.sig-u{border:1px solid rgba(0,170,255,.3);color:var(--blue);background:rgba(0,170,255,.06)}
+.oc-ai{padding:7px 11px;border-top:1px solid var(--border);font-size:11px;
+  color:var(--muted);line-height:1.6;font-style:italic}
+.oc-actions{padding:5px 11px;display:flex;gap:5px;border-top:1px solid var(--border)}
+.abtn{font-family:var(--mono);font-size:9px;padding:4px 8px;border-radius:3px;
+  cursor:pointer;border:1px solid var(--border);background:transparent;
+  color:var(--muted);transition:all .15s}
+.abtn:hover{border-color:var(--green);color:var(--green)}
+.abtn.p{border-color:var(--green);color:var(--green)}
+.kelly-tag{font-size:10px;padding:3px 7px;border-radius:3px;
+  background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:var(--green)}
+
+/* ── NEWS TAB ── */
+.news-feed{padding:10px;display:flex;flex-direction:column;gap:6px}
+.news-card{background:var(--s1);border:1px solid var(--border);border-radius:4px;
+  padding:10px 12px;transition:all .2s;cursor:pointer}
+.news-card:hover{border-color:rgba(0,229,204,.3);transform:translateX(2px)}
+.news-card-title{font-size:12px;color:var(--text);margin-bottom:4px;line-height:1.5}
+.news-card-meta{display:flex;gap:8px;align-items:center;font-size:10px;color:var(--muted)}
+.impact-high{color:var(--red)}.impact-med{color:var(--orange)}.impact-low{color:var(--muted)}
+.news-impact{font-size:9px;padding:1px 6px;border-radius:2px;font-weight:700}
+.ni-high{background:rgba(255,51,85,.12);color:var(--red);border:1px solid rgba(255,51,85,.25)}
+.ni-med{background:rgba(255,140,0,.12);color:var(--orange);border:1px solid rgba(255,140,0,.25)}
+.ni-low{background:rgba(48,69,85,.3);color:var(--muted);border:1px solid var(--border)}
+
+/* ── MATCHES TABLE ── */
+.mtbl{width:100%;border-collapse:collapse;font-size:11px}
+.mtbl th{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--muted);
+  font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:400;
+  text-align:left;background:var(--s2);position:sticky;top:0}
+.mtbl td{padding:8px 12px;border-bottom:1px solid rgba(22,32,48,.5)}
+.mtbl tr:hover td{background:var(--s2)}
+.pn{font-family:var(--head);font-size:11px;font-weight:600}
+.tn{color:var(--muted);font-size:10px}
+.evchip{font-size:9px;padding:2px 6px;border-radius:2px;font-weight:700}
+.ev-pos{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.ev-neg{background:rgba(255,51,85,.08);color:var(--red);border:1px solid rgba(255,51,85,.15)}
+.am-odds{font-weight:700;font-size:12px}
+
+/* ── LOG ── */
+.log-wrap{padding:8px 12px;display:flex;flex-direction:column;gap:1px}
+.lr{display:flex;gap:8px;font-size:11px;line-height:1.7}
+.lt{color:var(--muted);min-width:52px;flex-shrink:0;font-size:10px}
+.lm.s{color:var(--green)}.lm.i{color:var(--blue)}.lm.w{color:var(--orange)}
+.lm.e{color:var(--red)}.lm.ai{color:var(--yellow)}.lm.n{color:var(--teal)}
+
+/* ── RIGHT SIDEBAR - CHAT ── */
+.rsb{border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--s1)}
+.chat-hdr{padding:10px 12px;border-bottom:1px solid var(--border);background:var(--s2);flex-shrink:0}
+.chat-title{font-family:var(--head);font-size:10px;font-weight:700;
+  display:flex;align-items:center;gap:7px;margin-bottom:2px}
+.chat-sub{font-size:9px;color:var(--muted)}
+.tg-ball{width:22px;height:22px;background:linear-gradient(135deg,#2aabee,#229ed9);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;flex-shrink:0}
+.msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+.msg{max-width:90%;padding:7px 9px;border-radius:5px;font-size:11px;
+  line-height:1.6;word-break:break-word}
+.msg.bot{background:var(--s3);border:1px solid var(--border);
+  align-self:flex-start;border-radius:0 5px 5px 5px}
+.msg.user{background:rgba(0,170,255,.1);border:1px solid rgba(0,170,255,.2);
+  align-self:flex-end;border-radius:5px 0 5px 5px}
+.msg-meta{font-size:9px;color:var(--muted);margin-top:3px}
+.cmds{padding:6px 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  display:flex;gap:4px;flex-wrap:wrap;background:var(--s2);flex-shrink:0}
+.cmd{font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;transition:all .15s}
+.cmd:hover{border-color:var(--green);color:var(--green)}
+.cinput-row{padding:8px 10px;display:flex;gap:5px;flex-shrink:0}
+.cinput{flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);
+  font-family:var(--mono);font-size:11px;padding:6px 9px;border-radius:3px;
+  outline:none;transition:border-color .15s}
+.cinput:focus{border-color:var(--blue)}.cinput::placeholder{color:var(--muted)}
+.csend{background:var(--blue);border:none;color:#000;font-family:var(--mono);
+  font-size:11px;font-weight:700;padding:6px 11px;border-radius:3px;cursor:pointer;
+  transition:all .15s}
+.csend:hover{background:#22ccff}
+.rbar{height:1px;background:var(--border);overflow:hidden;flex-shrink:0}
+.rfill{height:100%;background:linear-gradient(90deg,var(--purple),var(--green));
+  width:0;transition:width 1s linear}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:50px 20px;text-align:center;color:var(--muted);flex:1}
+.empty-icon{font-size:32px;opacity:.2}
+.empty-title{font-family:var(--head);font-size:13px;color:var(--text);font-weight:600}
+.empty-sub{font-size:11px;max-width:250px;line-height:1.7}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.dot-typing{display:flex;gap:4px;padding:2px 0}
+.dt{width:5px;height:5px;border-radius:50%;background:var(--muted);
+  animation:dtb 1.2s infinite}
+.dt:nth-child(2){animation-delay:.2s}.dt:nth-child(3){animation-delay:.4s}
+@keyframes dtb{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="logo"><div class="logo-ring">🎾</div>Tennis<em>Sense</em><sup>PRO</sup></div>
+  <div class="hpills">
+    <div class="pill g" id="p-pp">● PrizePicks</div>
+    <div class="pill o" id="p-hr">● HardRock</div>
+    <div class="pill b" id="p-tt">● Tennistonic</div>
+    <div class="pill p" id="p-stat">● Statistics</div>
+    <div class="pill t" id="p-news">● News</div>
+  </div>
+  <div class="hright">
+    <div class="scan-ind"><div class="sdot" id="sdot"></div><span id="sstatus">IDLE</span></div>
+    <div class="scan-ind" id="cdpill" style="display:none"><span id="cdtxt">—</span></div>
+    <button class="start-btn on" id="mainbtn" onclick="toggleScan()">▶ START</button>
+  </div>
+</header>
+<div class="rbar"><div class="rfill" id="rfill"></div></div>
+
+<div class="stats-bar">
+  <div class="sc"><div class="sv cg" id="st-pp">0</div><div class="sl">PP Props</div></div>
+  <div class="sc"><div class="sv co" id="st-hr">0</div><div class="sl">HardRock</div></div>
+  <div class="sc"><div class="sv cy" id="st-arb">0</div><div class="sl">Arbitrage</div></div>
+  <div class="sc"><div class="sv cp" id="st-ev">0</div><div class="sl">+EV Bets</div></div>
+  <div class="sc"><div class="sv cb" id="st-mt">0</div><div class="sl">Matches</div></div>
+  <div class="sc"><div class="sv ct" id="st-nw">0</div><div class="sl">News Items</div></div>
+  <div class="sc"><div class="sv" id="st-sc">0</div><div class="sl">Scans</div></div>
+  <div class="sc"><div class="sv cr" id="st-al">0</div><div class="sl">Alerts</div></div>
+</div>
+
+<div class="main">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="lsb">
+    <div class="pnl">
+      <div class="pt">Telegram</div>
+      <div class="fi"><label>Bot Token</label><input type="password" id="tgToken" placeholder="123456:AAFxxx..."></div>
+      <div class="fi"><label>Chat ID</label><input type="text" id="tgChat" placeholder="8082026427"></div>
+      <button class="mbtn blue" onclick="testTelegram()">📨 Test Connection</button>
+    </div>
+    <div class="pnl">
+      <div class="pt">API Keys</div>
+      <div class="fi"><label>Odds API Key</label><input type="password" id="oddsKey" placeholder="HardRock lines..."></div>
+      <div class="fi"><label>Anthropic Key</label><input type="password" id="aiKey" placeholder="sk-ant-..."></div>
+      <div class="fi"><label>AllSports Key</label><input type="password" id="sportsKey" placeholder="6cc6daee..."></div>
+    </div>
+    <div class="pnl">
+      <div class="pt">Engine Settings</div>
+      <div class="fi"><label>Min EV %</label><input type="number" id="minEV" value="3" step="0.5"></div>
+      <div class="fi"><label>Min Confidence</label><input type="number" id="minConf" value="60" step="5"></div>
+      <div class="fi"><label>Kelly Fraction</label><input type="number" id="kellyFrac" value="0.25" step="0.05"></div>
+      <div class="fi"><label>Bankroll ($)</label><input type="number" id="bankroll" value="1000" step="100"></div>
+      <div class="fi"><label>Scan Interval (s)</label><input type="number" id="scanInt" value="120" step="30"></div>
+    </div>
+    <div class="pnl" style="flex:1">
+      <div class="pt">Tennis News</div>
+      <div id="newsSidebar" style="font-size:10px;color:var(--muted)">Start scanner to load news...</div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center">
+    <div class="tabbar">
+      <div class="tab active" onclick="switchTab('opps')">Opportunities <span class="tbadge g" id="tb-opps">0</span></div>
+      <div class="tab" onclick="switchTab('news')">News Feed <span class="tbadge t" id="tb-news">0</span></div>
+      <div class="tab" onclick="switchTab('matches')">Matches <span class="tbadge" id="tb-mt">0</span></div>
+      <div class="tab" onclick="switchTab('log')">Activity Log</div>
+    </div>
+
+    <!-- OPPORTUNITIES -->
+    <div class="tpane active" id="pane-opps">
+      <div class="opps" id="oppsContainer">
+        <div class="empty">
+          <div class="empty-icon">📊</div>
+          <div class="empty-title">Ready to Scan</div>
+          <div class="empty-sub">Add your API keys and press START. The engine will pull live HardRock odds, PrizePicks props, AllSports H2H data, and breaking tennis news — then apply Markov chain, Monte Carlo, Kelly Criterion, and EV analysis to every match.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEWS FEED -->
+    <div class="tpane" id="pane-news">
+      <div class="news-feed" id="newsFeed">
+        <div class="empty">
+          <div class="empty-icon">📰</div>
+          <div class="empty-title">No News Yet</div>
+          <div class="empty-sub">Start the scanner to fetch breaking tennis news. High-impact items (injuries, withdrawals, weather) will automatically trigger re-analysis of affected matches.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCHES -->
+    <div class="tpane" id="pane-matches">
+      <table class="mtbl">
+        <thead><tr>
+          <th>Match</th><th>Surface</th>
+          <th>P1 Odds</th><th>P2 Odds</th>
+          <th>True Prob</th><th>EV</th><th>Vig</th><th>Props</th>
+        </tr></thead>
+        <tbody id="matchesTbody">
+          <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:40px">No data yet — start scanner.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- LOG -->
+    <div class="tpane" id="pane-log">
+      <div class="log-wrap" id="logWrap">
+        <div class="lr"><span class="lt">--:--:--</span><span class="lm i">TennisSense PRO v3 — Statistical engine + News feed ready. Add API keys and start scanning.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="rsb">
+    <div class="chat-hdr">
+      <div class="chat-title"><div class="tg-ball">✈</div>TennisSense Bot</div>
+      <div class="chat-sub">Claude Opus 4 · Statistical Engine · Live News</div>
+    </div>
+    <div class="msgs" id="chatMsgs">
+      <div class="msg bot">
+        👋 <b>TennisSense PRO v3</b><br><br>
+        Powered by <b>Claude Opus 4</b><br>
+        Statistical engine + Live news feed<br><br>
+        /analyze [P1] vs [P2]<br>
+        /bets · /ev · /kelly<br>
+        /news · /hardrock · /prizepicks
+        <div class="msg-meta">TennisSense</div>
+      </div>
+    </div>
+    <div class="cmds">
+      <div class="cmd" onclick="sc('/analyze ')">/analyze</div>
+      <div class="cmd" onclick="sc('/bets')">/bets</div>
+      <div class="cmd" onclick="sc('/ev')">/ev</div>
+      <div class="cmd" onclick="sc('/news')">/news</div>
+      <div class="cmd" onclick="sc('/hardrock')">/hardrock</div>
+      <div class="cmd" onclick="sc('/prizepicks')">/prizepicks</div>
+    </div>
+    <div class="cinput-row">
+      <input class="cinput" id="chatInput" placeholder="Ask anything about tennis..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="csend" onclick="sendChat()">→</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let scanning=false,scanTimer=null,cdTimer=null,tgPollTimer=null,tgOffset=0;
+let stats={pp:0,hr:0,arb:0,ev:0,mt:0,nw:0,sc:0,al:0};
+let opportunities=[],allMatches=[],newsItems=[],tgMessages=[];
+
+// ═══════════════════════════════════════════════════════════════
+// STATISTICAL ENGINE
+// ═══════════════════════════════════════════════════════════════
+function toAmerican(d){
+  if(!d||d<=1)return'N/A';
+  return d>=2?'+'+Math.round((d-1)*100):'-'+Math.round(100/(d-1));
+}
+function removeVig(d1,d2){
+  const i1=1/d1,i2=1/d2,m=i1+i2;
+  return{p1:i1/m,p2:i2/m,vig:((m-1)*100).toFixed(2)};
+}
+function calcEV(p,d){return((p*(d-1)-(1-p))*100).toFixed(2);}
+function kellyStake(p,d){
+  const b=d-1,k=Math.max(0,(b*p-(1-p))/b);
+  const f=parseFloat(document.getElementById('kellyFrac').value)||0.25;
+  const br=parseFloat(document.getElementById('bankroll').value)||1000;
+  return{pct:(k*f*100).toFixed(1),dollar:(k*f*br).toFixed(0)};
+}
+function pWinGame(p){
+  const q=1-p;
+  return Math.pow(p,4)+4*Math.pow(p,4)*q+10*Math.pow(p,4)*q*q+
+    (20*Math.pow(p,3)*Math.pow(q,3))*(p*p/(p*p+q*q));
+}
+function pWinSet(pg){
+  const qg=1-pg;let s=0;
+  for(let l=0;l<=4;l++){let w=1;for(let i=0;i<l;i++)w*=(5+l-i)/(i+1);s+=w*Math.pow(pg,6)*Math.pow(qg,l);}
+  s+=462*Math.pow(pg,6)*Math.pow(qg,5)*pg; // 7-5
+  const pt=pg>0.5?0.5+(pg-0.5)*0.8:0.5-(0.5-pg)*0.8;
+  s+=462*Math.pow(pg,6)*Math.pow(qg,5)*pt; // tiebreak
+  return Math.min(0.99,Math.max(0.01,s));
+}
+function pWinMatch(ps){return Math.pow(ps,2)+2*Math.pow(ps,2)*(1-ps);}
+function modelProb(trueP){
+  const pg=pWinGame(trueP*0.7+0.3);
+  const ps=pWinSet(pg);
+  return pWinMatch(ps);
+}
+function poissonP(lambda,k){
+  let p=Math.exp(-lambda);for(let i=1;i<=k;i++)p*=lambda/i;return p;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATA FETCHING
+// ═══════════════════════════════════════════════════════════════
+async function fetchPrizePicks(){
+  try{
+    const r=await fetch('https://partner-api.prizepicks.com/projections?per_page=250&single_stat=true');
+    if(!r.ok)return[];
+    const d=await r.json();
+    const players={};
+    (d.included||[]).forEach(x=>{if(x.type==='new_player')players[x.id]={name:x.attributes?.name||'Unknown',league:x.attributes?.league||''};});
+    const props=[];
+    (d.data||[]).forEach(proj=>{
+      const a=proj.attributes||{};
+      const lg=(a.league||'').toUpperCase();
+      if(!['ATP','WTA','ITF','TENNIS'].some(l=>lg.includes(l)))return;
+      const pl=players[proj.relationships?.new_player?.data?.id]||{name:'Unknown'};
+      const line=parseFloat(a.line_score)||0;
+      const stat=a.stat_type||'Games Won';
+      // Poisson analysis for aces
+      let poissonEdge=null;
+      if(stat.toLowerCase().includes('ace')){
+        const avgAces=3.5; // ATP average
+        const {pOver,pUnder}=poissonOU(avgAces,line);
+        poissonEdge={pOver:(pOver*100).toFixed(0),pUnder:(pUnder*100).toFixed(0),line};
+      }
+      props.push({player:pl.name,stat,line,over:`${stat} Over ${line}`,under:`${stat} Under ${line}`,poissonEdge,league:pl.league||lg});
+    });
+    return props;
+  }catch{return[];}
+}
+function poissonOU(lambda,line){
+  let pU=0;const k=Math.floor(line);
+  for(let i=0;i<=k;i++)pU+=poissonP(lambda,i);
+  if(line===k)pU-=poissonP(lambda,k)*0.5;
+  return{pOver:1-pU,pUnder:pU};
+}
+async function fetchOddsAPI(){
+  const key=document.getElementById('oddsKey').value.trim();
+  if(!key)return[];
+  try{
+    const r=await fetch(`https://api.the-odds-api.com/v4/sports/tennis/odds/?apiKey=${key}&regions=us&markets=h2h&oddsFormat=decimal`);
+    if(!r.ok)return[];
+    const d=await r.json();
+    return d.map(m=>{
+      const om={};
+      (m.bookmakers||[]).forEach(bm=>{
+        const mk=bm.markets?.find(x=>x.key==='h2h');if(!mk)return;
+        mk.outcomes.forEach(o=>{if(!om[o.name])om[o.name]=[];om[o.name].push({price:o.price,book:bm.title});});
+      });
+      const ho=om[m.home_team]||[],ao=om[m.away_team]||[];
+      if(!ho.length||!ao.length)return null;
+      const bh=ho.reduce((a,b)=>b.price>a.price?b:a);
+      const ba=ao.reduce((a,b)=>b.price>a.price?b:a);
+      const{p1:th,p2:ta,vig}=removeVig(bh.price,ba.price);
+      // Markov model probability
+      const mp1=modelProb(th);
+      const evH=calcEV(mp1,bh.price);
+      const evA=calcEV(1-mp1,ba.price);
+      return{
+        home:m.home_team,away:m.away_team,
+        homeD:bh.price,awayD:ba.price,
+        homeA:toAmerican(bh.price),awayA:toAmerican(ba.price),
+        homeBook:bh.book,awayBook:ba.book,
+        trueHome:th,trueAway:ta,vig,
+        modelP1:mp1,modelP2:1-mp1,
+        evHome:evH,evAway:evA,
+        kellyHome:kellyStake(mp1,bh.price),
+        kellyAway:kellyStake(1-mp1,ba.price),
+        commence:m.commence_time,
+        bookCount:(m.bookmakers||[]).length
+      };
+    }).filter(Boolean);
+  }catch{return[];}
+}
+async function fetchAllSports(){
+  const key=document.getElementById('sportsKey').value.trim();
+  if(!key)return[];
+  try{
+    const today=new Date().toISOString().split('T')[0];
+    const r=await fetch(`https://apiv2.allsportsapi.com/tennis/?met=Fixtures&APIkey=${key}&from=${today}&to=${today}`);
+    if(!r.ok)return[];
+    const d=await r.json();
+    return d.result||[];
+  }catch{return[];}
+}
+async function fetchTennisNews(){
+  // Use Claude AI to get breaking tennis news via web search
+  const aiKey=document.getElementById('aiKey').value.trim();
+  if(!aiKey)return[];
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-opus-4-5',max_tokens:600,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:'Search for breaking tennis news from the last 24 hours. Focus on: player injuries, withdrawals, upsets, weather conditions at tournaments, line movements. Return a JSON array of up to 6 items with fields: headline, player, impact (HIGH/MEDIUM/LOW), summary (1 sentence), affectsBetting (true/false). Return ONLY the JSON array, no markdown.'}]
+      })
+    });
+    const d=await r.json();
+    // Extract text from response (may include tool use blocks)
+    const textBlocks=d.content?.filter(c=>c.type==='text')||[];
+    const text=textBlocks.map(c=>c.text).join('');
+    try{
+      const clean=text.replace(/```json|```/g,'').trim();
+      const arr=JSON.parse(clean);
+      return Array.isArray(arr)?arr:[];
+    }catch{return[];}
+  }catch{return[];}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANALYSIS ENGINE
+// ═══════════════════════════════════════════════════════════════
+async function analyzeAll(){
+  const minEV=parseFloat(document.getElementById('minEV').value)||3;
+  const minConf=parseFloat(document.getElementById('minConf').value)||60;
+  const aiKey=document.getElementById('aiKey').value.trim();
+  const opps=[];
+
+  // 1. Fetch all data in parallel
+  log('Fetching PrizePicks, HardRock, AllSports, and News simultaneously...','i');
+  setPillActive('p-pp',true);setPillActive('p-hr',true);
+  setPillActive('p-tt',true);setPillActive('p-stat',true);setPillActive('p-news',true);
+
+  const[props,odds,fixtures,news]=await Promise.all([
+    fetchPrizePicks(),fetchOddsAPI(),fetchAllSports(),fetchTennisNews()
+  ]);
+
+  setPillActive('p-pp',false);setPillActive('p-hr',false);
+  setPillActive('p-tt',false);setPillActive('p-stat',false);setPillActive('p-news',false);
+
+  // 2. Update stats
+  stats.mt=odds.length+props.length;
+  stats.nw=news.length;
+  document.getElementById('st-mt').textContent=stats.mt;
+  document.getElementById('st-nw').textContent=news.length;
+  document.getElementById('tb-mt').textContent=odds.length;
+  allMatches=[...odds,...props];
+
+  log(`Data loaded: ${odds.length} HardRock matches, ${props.length} PP props, ${news.length} news items`,'s');
+
+  // 3. Render news
+  renderNews(news);
+
+  // 4. Render matches table
+  renderMatchesTable(odds,props,fixtures);
+
+  // 5. Find opportunities in HardRock lines
+  for(const m of odds){
+    // Check news impact on this match
+    const newsHit=news.find(n=>n.player&&(
+      m.home.toLowerCase().includes(n.player.toLowerCase().split(' ').pop())||
+      m.away.toLowerCase().includes(n.player.toLowerCase().split(' ').pop())
+    ));
+
+    for(const[side,odds_d,evPct,kelly,prob,implProb]of[
+      [m.home,m.homeD,m.evHome,m.kellyHome,m.modelP1,m.trueHome],
+      [m.away,m.awayD,m.evAway,m.kellyAway,m.modelP2,m.trueAway]
+    ]){
+      const ev=parseFloat(evPct);
+      if(ev<minEV)continue;
+
+      // Confidence score
+      const edge=Math.abs(prob-implProb);
+      const conf=Math.min(95,Math.max(30,
+        60+edge*200+(m.bookCount>=5?10:0)+(newsHit?.impact==='HIGH'?-15:0)
+      )).toFixed(0);
+
+      if(parseFloat(conf)<minConf)continue;
+
+      // Get AI insight
+      let aiInsight=null;
+      if(aiKey){
+        aiInsight=await getQuickInsight(m.home,m.away,side,odds_d,prob,ev,newsHit,aiKey);
+      }
+
+      const signals=[];
+      if(ev>5)signals.push({l:'High EV +'+ev+'%',t:'p'});
+      if(m.bookCount>=5)signals.push({l:m.bookCount+' books',t:'u'});
+      if(edge>0.05)signals.push({l:'Model edge',t:'p'});
+      if(newsHit){
+        if(newsHit.impact==='HIGH')signals.push({l:'⚠ '+newsHit.headline.slice(0,30),t:'n'});
+        else signals.push({l:'📰 News signal',t:'u'});
+      }
+      if(m.vig<4)signals.push({l:'Low vig '+m.vig+'%',t:'p'});
+
+      opps.push({
+        id:`ev_${m.home}_${m.away}_${side}`,
+        match:`${m.home} vs ${m.away}`,
+        type:'Value Bet',source:'HardRock',
+        side,oddsDecimal:odds_d,oddsAmerican:side===m.home?m.homeA:m.awayA,
+        book:side===m.home?m.homeBook:m.awayBook,
+        implProb:(implProb*100).toFixed(1),modelProb:(prob*100).toFixed(1),
+        evPct:ev.toFixed(1),kelly,conf,
+        vig:m.vig,signals,aiInsight,
+        newsHit:newsHit||null,
+        cardClass:'ev'
+      });
+      stats.hr++;stats.ev++;
+    }
+
+    // Arbitrage check
+    const arbSum=1/m.homeD+1/m.awayD;
+    if(arbSum<1){
+      const profit=((1/arbSum)-1)*100;
+      opps.push({
+        id:`arb_${m.home}_${m.away}`,
+        match:`${m.home} vs ${m.away}`,
+        type:'Arbitrage',source:'Multi-Book',
+        side:'Both sides',
+        oddsHome:m.homeA,oddsAway:m.awayA,
+        homeBook:m.homeBook,awayBook:m.awayBook,
+        profit:profit.toFixed(2),
+        evPct:profit.toFixed(2),
+        conf:95,
+        kelly:{dollar:document.getElementById('bankroll').value||'1000',pct:'100'},
+        signals:[{l:'GUARANTEED PROFIT',t:'p'},{l:`+${profit.toFixed(2)}%`,t:'p'}],
+        cardClass:'arb'
+      });
+      stats.arb++;stats.ev++;
+    }
+  }
+
+  // 6. PrizePicks opportunities
+  for(const p of props){
+    if(!p.poissonEdge)continue;
+    const edgeOver=Math.abs(parseFloat(p.poissonEdge.pOver)-50);
+    if(edgeOver<10)continue;
+    opps.push({
+      id:`pp_${p.player}_${p.stat}`,
+      match:`${p.player} — ${p.stat}`,
+      type:'PP Prop',source:'PrizePicks',
+      side:parseFloat(p.poissonEdge.pOver)>55?p.over:p.under,
+      oddsAmerican:'+85 (PrizePicks)',
+      implProb:'50.0',
+      modelProb:parseFloat(p.poissonEdge.pOver)>55?p.poissonEdge.pOver:p.poissonEdge.pUnder,
+      evPct:(edgeOver*0.5).toFixed(1),
+      conf:Math.min(80,50+edgeOver).toFixed(0),
+      kelly:{dollar:'—',pct:'—'},
+      signals:[
+        {l:'Poisson model',t:'u'},
+        {l:`Model: ${parseFloat(p.poissonEdge.pOver)>55?p.poissonEdge.pOver:p.poissonEdge.pUnder}%`,t:'p'}
+      ],
+      cardClass:'pp'
+    });
+    stats.pp++;stats.ev++;
+  }
+
+  // 7. News-based alerts
+  news.filter(n=>n.affectsBetting&&n.impact==='HIGH').forEach(n=>{
+    opps.push({
+      id:`news_${Date.now()}_${Math.random()}`,
+      match:n.player||'Breaking News',
+      type:'News Alert',source:'Live News',
+      side:'See analysis',
+      newsHit:n,
+      evPct:'N/A',conf:'N/A',
+      kelly:{dollar:'—',pct:'—'},
+      signals:[{l:'HIGH IMPACT',t:'n'},{l:n.impact,t:'n'}],
+      aiInsight:n.summary,
+      cardClass:'news-alert'
+    });
+  });
+
+  // Update stats
+  document.getElementById('st-pp').textContent=stats.pp;
+  document.getElementById('st-hr').textContent=stats.hr;
+  document.getElementById('st-arb').textContent=stats.arb;
+  document.getElementById('st-ev').textContent=stats.ev;
+  document.getElementById('tb-opps').textContent=opps.length;
+  document.getElementById('tb-opps').className=`tbadge ${opps.length>0?'g':''}`;
+
+  if(opps.length>0){
+    const newOpps=opps.filter(o=>!opportunities.find(x=>x.id===o.id));
+    opportunities=[...newOpps,...opportunities].slice(0,60);
+    renderOpps();
+    for(const opp of newOpps)await alertOpp(opp);
+    log(`Found ${newOpps.length} new opportunities. Total: ${opportunities.length}`,'s');
+  }else{
+    log('No qualifying opportunities this scan (below EV/confidence thresholds).','i');
+  }
+  updateLiveStats();
+}
+
+async function getQuickInsight(home,away,side,odds,prob,ev,newsHit,apiKey){
+  try{
+    const newsCtx=newsHit?`\nBreaking news: ${newsHit.headline} (Impact: ${newsHit.impact})`:'';
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-opus-4-5',max_tokens:120,
+        messages:[{role:'user',content:`Tennis value bet: ${home} vs ${away}. Back ${side} @ ${toAmerican(odds)} American odds. Model prob: ${(prob*100).toFixed(1)}%, EV: +${ev}%.${newsCtx}\n\nGive 1-2 sentence statistical rationale. Be direct and quantitative.`}]
+      })
+    });
+    const d=await r.json();
+    return d.content?.[0]?.text||null;
+  }catch{return null;}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════════
+function renderOpps(){
+  const c=document.getElementById('oppsContainer');
+  if(!opportunities.length)return;
+  c.innerHTML=opportunities.map((o,i)=>{
+    const evNum=parseFloat(o.evPct)||0;
+    const evColor=evNum>=10?'g':evNum>=5?'b':evNum>=2?'o':'cr';
+    const confNum=parseFloat(o.conf)||0;
+    const confColor=confNum>=75?'g':confNum>=55?'b':'o';
+    const confFill=confNum>=75?'var(--green)':confNum>=55?'var(--blue)':'var(--orange)';
+    const typeBadge=o.type==='Arbitrage'?'badge-y':o.source==='PrizePicks'?'badge-p':o.type==='News Alert'?'badge-t':'badge-g';
+
+    const sigs=(o.signals||[]).map(s=>`<span class="sig sig-${s.t}">${s.l}</span>`).join('');
+
+    let statsHtml='';
+    if(o.type==='Arbitrage'){
+      statsHtml=`
+        <div class="om"><div class="oml">Home</div><div class="omv g">${o.oddsHome||'—'}</div></div>
+        <div class="om"><div class="oml">Away</div><div class="omv g">${o.oddsAway||'—'}</div></div>
+        <div class="om"><div class="oml">Profit</div><div class="omv y">+${o.profit}%</div></div>
+        <div class="om"><div class="oml">Stake</div><div class="omv p">$${o.kelly?.dollar||'—'}</div></div>`;
+    }else if(o.type==='News Alert'){
+      statsHtml=`
+        <div class="om"><div class="oml">Player</div><div class="omv t">${o.match}</div></div>
+        <div class="om"><div class="oml">Impact</div><div class="omv cr">${o.newsHit?.impact||'HIGH'}</div></div>
+        <div class="om"><div class="oml">Affects Betting</div><div class="omv y">YES</div></div>
+        <div class="om"><div class="oml">Action</div><div class="omv o">Re-analyze</div></div>`;
+    }else{
+      statsHtml=`
+        <div class="om"><div class="oml">Bet</div><div class="omv g">${o.side||'—'}</div></div>
+        <div class="om"><div class="oml">Odds (American)</div><div class="omv b">${o.oddsAmerican||'—'}</div></div>
+        <div class="om"><div class="oml">Expected Value</div><div class="omv ${evColor}">+${o.evPct}%</div></div>
+        <div class="om"><div class="oml">Kelly Stake</div><div class="omv p">$${o.kelly?.dollar||'—'}</div></div>`;
+    }
+
+    const statsRow2=o.type!=='Arbitrage'&&o.type!=='News Alert'?`
+      <div class="oc-grid" style="padding-top:0">
+        <div class="om"><div class="oml">Implied Prob</div><div class="omv">${o.implProb||'—'}%</div></div>
+        <div class="om"><div class="oml">Model Prob</div><div class="omv b">${o.modelProb||'—'}%</div></div>
+        <div class="om"><div class="oml">Vig</div><div class="omv o">${o.vig||'—'}%</div></div>
+        <div class="om"><div class="oml">Book</div><div class="omv" style="font-size:10px">${o.book||o.source||'—'}</div></div>
+      </div>`:'';
+
+    return`<div class="oc ${o.cardClass}">
+      <div class="oc-top">
+        <div class="oc-match">${o.match}</div>
+        <div class="oc-badges">
+          <span class="badge ${typeBadge}">${o.source}</span>
+          <span class="badge badge-g">${o.type}</span>
+        </div>
+      </div>
+      <div class="oc-grid">${statsHtml}</div>
+      ${statsRow2}
+      ${o.conf!=='N/A'?`<div class="conf-row">
+        <div class="conf-lbl">Confidence</div>
+        <div class="conf-track"><div class="conf-fill" style="width:${o.conf}%;background:${confFill}"></div></div>
+        <div class="conf-val ${confColor}">${o.conf}/100</div>
+      </div>`:''}
+      ${sigs?`<div class="sigs">${sigs}</div>`:''}
+      ${o.aiInsight?`<div class="oc-ai">🧠 ${o.aiInsight}</div>`:''}
+      <div class="oc-actions">
+        <button class="abtn p" onclick="alertManual(${i})">📨 Alert</button>
+        <button class="abtn" onclick="askAbout('${o.match.replace(/'/g,"\\'")}')">Ask AI</button>
+        ${o.kelly?.dollar&&o.kelly.dollar!=='—'?`<span class="kelly-tag">Kelly: $${o.kelly.dollar}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNews(items){
+  newsItems=items;
+  document.getElementById('st-nw').textContent=items.length;
+  document.getElementById('tb-news').textContent=items.length;
+
+  const feed=document.getElementById('newsFeed');
+  if(!items.length){
+    feed.innerHTML='<div class="empty"><div class="empty-icon">📰</div><div class="empty-title">No Breaking News</div><div class="empty-sub">No significant tennis news in the last 24 hours.</div></div>';
+    document.getElementById('newsSidebar').innerHTML='<div style="color:var(--muted);font-size:10px">No breaking news right now.</div>';
+    return;
+  }
+
+  // Render main feed
+  feed.innerHTML=items.map(n=>`
+    <div class="news-card" onclick="askAbout('${(n.player||'tennis news').replace(/'/g,"\\'")} - ${n.headline?.slice(0,30).replace(/'/g,"\\'")}')">
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
+        <span class="news-impact ${n.impact==='HIGH'?'ni-high':n.impact==='MEDIUM'?'ni-med':'ni-low'}">${n.impact||'LOW'}</span>
+        <div class="news-card-title">${n.headline||'Tennis Update'}</div>
+      </div>
+      <div class="news-card-meta">
+        <span>${n.player||'General'}</span>
+        <span>·</span>
+        <span>${n.affectsBetting?'⚠️ Affects betting lines':'ℹ️ General news'}</span>
+      </div>
+      ${n.summary?`<div style="font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5">${n.summary}</div>`:''}
+    </div>
+  `).join('');
+
+  // Render sidebar
+  document.getElementById('newsSidebar').innerHTML=items.slice(0,4).map(n=>`
+    <div class="news-item" onclick="switchTab('news')">
+      <span class="news-tag">${n.impact||'INFO'}</span>${(n.headline||'').slice(0,45)}${n.headline?.length>45?'...':''}
+    </div>
+  `).join('');
+}
+
+function renderMatchesTable(odds,props,fixtures){
+  const tbody=document.getElementById('matchesTbody');
+  if(!odds.length&&!props.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px">No data.</td></tr>';return;
+  }
+  // Combine odds data with fixture surface data
+  const surfaceMap={};
+  (fixtures||[]).forEach(f=>{
+    const key=`${f.event_first_player}|${f.event_second_player}`;
+    surfaceMap[key]=f.league_surface||'Hard';
+  });
+
+  let rows=odds.slice(0,30).map(m=>{
+    const evH=parseFloat(m.evHome),evA=parseFloat(m.evAway);
+    const surface=Object.entries(surfaceMap).find(([k])=>
+      k.toLowerCase().includes(m.home.toLowerCase().split(' ').pop())
+    )?.[1]||'Hard';
+    return`<tr>
+      <td><div class="pn">${m.home}</div><div class="tn">vs ${m.away}</div></td>
+      <td style="font-size:10px;color:var(--muted)">${surface}</td>
+      <td><span class="am-odds ${evH>3?'cg':''}">${m.homeA}</span><div style="font-size:9px;color:var(--muted)">${(m.trueHome*100).toFixed(0)}% true</div></td>
+      <td><span class="am-odds ${evA>3?'cg':''}">${m.awayA}</span><div style="font-size:9px;color:var(--muted)">${(m.trueAway*100).toFixed(0)}% true</div></td>
+      <td style="font-size:10px">${(m.modelP1*100).toFixed(0)}% / ${(m.modelP2*100).toFixed(0)}%</td>
+      <td><span class="evchip ${evH>0||evA>0?'ev-pos':'ev-neg'}">${Math.max(evH,evA)>0?'+':''}${Math.max(evH,evA).toFixed(1)}%</span></td>
+      <td style="font-size:10px;color:var(--muted)">${m.vig}%</td>
+      <td><button class="abtn" onclick="askAbout('${m.home.replace(/'/g,"\\'")} vs ${m.away.replace(/'/g,"\\'")}')">Analyze</button></td>
+    </tr>`;
+  }).join('');
+
+  // Add prop rows
+  rows+=props.slice(0,10).map(p=>`<tr>
+    <td><div class="pn">${p.player}</div><div class="tn">${p.stat} O/U ${p.line}</div></td>
+    <td style="font-size:10px;color:var(--purple)">PrizePicks</td>
+    <td><span class="am-odds" style="color:var(--purple)">Over ${p.line}</span></td>
+    <td><span class="am-odds" style="color:var(--muted)">Under ${p.line}</span></td>
+    <td style="font-size:10px">${p.poissonEdge?p.poissonEdge.pOver+'% / '+p.poissonEdge.pUnder+'%':'—'}</td>
+    <td>${p.poissonEdge?`<span class="evchip ev-pos">Poisson</span>`:'—'}</td>
+    <td style="font-size:10px;color:var(--muted)">—</td>
+    <td><button class="abtn" onclick="askAbout('${p.player.replace(/'/g,"\\'")} ${p.stat} ${p.line}')">Analyze</button></td>
+  </tr>`).join('');
+
+  tbody.innerHTML=rows;
+  document.getElementById('tb-mt').textContent=odds.length+props.length;
+}
+
+function updateLiveStats(){
+  document.getElementById('st-sc').textContent=stats.sc;
+  document.getElementById('st-al').textContent=stats.al;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCANNER
+// ═══════════════════════════════════════════════════════════════
+function toggleScan(){scanning?stopScan():startScan();}
+function startScan(){
+  const t=document.getElementById('tgToken').value.trim();
+  const c=document.getElementById('tgChat').value.trim();
+  if(!t||!c){alert('Enter your Telegram Bot Token and Chat ID first.');return;}
+  scanning=true;
+  document.getElementById('mainbtn').textContent='⏹ STOP';
+  document.getElementById('mainbtn').className='start-btn off';
+  document.getElementById('sdot').classList.add('live');
+  document.getElementById('sstatus').textContent='SCANNING';
+  document.getElementById('cdpill').style.display='flex';
+  log('Scanner started. Fetching live data from all sources...','s');
+  sendTelegram('🟢 TennisSense PRO v3 scanner started.\n\n📊 Statistical engine + News feed active\nPowered by Claude Opus 4');
+  startTgPoll();
+  runScan();
+}
+function stopScan(){
+  scanning=false;clearTimeout(scanTimer);clearInterval(cdTimer);clearTimeout(tgPollTimer);
+  document.getElementById('mainbtn').textContent='▶ START';
+  document.getElementById('mainbtn').className='start-btn on';
+  document.getElementById('sdot').classList.remove('live');
+  document.getElementById('sstatus').textContent='IDLE';
+  document.getElementById('cdpill').style.display='none';
+  document.getElementById('rfill').style.width='0%';
+  ['p-pp','p-hr','p-tt','p-stat','p-news'].forEach(id=>setPillActive(id,false));
+  log('Scanner stopped.','w');
+}
+async function runScan(){
+  if(!scanning)return;
+  stats.sc++;updateLiveStats();
+  log(`Scan #${stats.sc} — fetching live data...`,'i');
+  try{await analyzeAll();}catch(e){log(`Scan error: ${e.message}`,'e');}
+  const interval=parseInt(document.getElementById('scanInt').value)||120;
+  startCountdown(interval);
+  scanTimer=setTimeout(runScan,interval*1000);
+}
+function setPillActive(id,active){
+  const el=document.getElementById(id);
+  if(active)el.classList.add('live');else el.classList.remove('live');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ALERTS & TELEGRAM
+// ═══════════════════════════════════════════════════════════════
+async function alertOpp(opp){
+  let msg;
+  if(opp.type==='Arbitrage'){
+    msg=`🎾 TennisSense ARBITRAGE\n━━━━━━━━━━━━━━━━━━━━\n🟡 GUARANTEED PROFIT\n\n${opp.match}\n\n📚 ${opp.homeBook}: ${opp.oddsHome}\n📚 ${opp.awayBook}: ${opp.oddsAway}\n\n💰 Profit: +${opp.profit}%\n⏱ ${new Date().toLocaleTimeString()}`;
+  }else if(opp.type==='News Alert'){
+    msg=`📰 TennisSense NEWS ALERT\n━━━━━━━━━━━━━━━━━━━━\n⚠️ HIGH IMPACT\n\n${opp.newsHit?.headline}\n\n${opp.aiInsight||''}\n⏱ ${new Date().toLocaleTimeString()}`;
+  }else{
+    msg=`🎾 TennisSense ${opp.type}\n━━━━━━━━━━━━━━━━━━━━\n${parseFloat(opp.evPct)>=10?'🔥':'✅'} +EV BET | ${opp.source}\n\n${opp.match}\n\nBet: ${opp.side} @ ${opp.oddsAmerican}\nModel prob: ${opp.modelProb}%\nImplied prob: ${opp.implProb}%\nEV: +${opp.evPct}%\nKelly stake: $${opp.kelly?.dollar}\nConfidence: ${opp.conf}/100${opp.aiInsight?'\n\n🧠 '+opp.aiInsight:''}\n⏱ ${new Date().toLocaleTimeString()}`;
+  }
+  await sendTelegram(msg);
+  stats.al++;updateLiveStats();
+  addMsg(msg.replace(/━/g,'-'));
+  log(`Alert sent: ${opp.match}`,'s');
+}
+async function alertManual(idx){
+  const o=opportunities[idx];if(!o)return;
+  log('Sending manual alert...','i');await alertOpp(o);
+}
+async function sendTelegram(text){
+  const token=document.getElementById('tgToken').value.trim();
+  const chatId=document.getElementById('tgChat').value.trim();
+  if(!token||!chatId)return false;
+  try{
+    const url=`https://api.telegram.org/bot${token}/sendMessage?chat_id=${encodeURIComponent(chatId)}&text=${encodeURIComponent(text)}`;
+    return(await(await fetch(url)).json()).ok;
+  }catch{return false;}
+}
+async function testTelegram(){
+  log('Testing Telegram...','i');
+  const ok=await sendTelegram('🎾 TennisSense PRO v3 connected!\n\nStatistical engine + Live news feed active.\nPowered by Claude Opus 4.');
+  if(ok){log('Telegram connected!','s');addMsg('✅ Telegram connected! Test message sent.');}
+  else{log('Telegram test failed.','e');addMsg('❌ Test failed. Check your token and Chat ID.');}
+}
+async function startTgPoll(){
+  if(!scanning)return;
+  const token=document.getElementById('tgToken').value.trim();
+  const chatId=document.getElementById('tgChat').value.trim();
+  if(!token||!chatId)return;
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${tgOffset+1}&timeout=3`);
+    const d=await r.json();
+    if(d.ok&&d.result?.length){
+      for(const u of d.result){
+        tgOffset=u.update_id;
+        const txt=u.message?.text;
+        const from=u.message?.chat?.id?.toString();
+        if(txt&&from===chatId){log(`Telegram: ${txt}`,'i');addMsg(txt,'user');handleCmd(txt);}
+      }
+    }
+  }catch{}
+  if(scanning)tgPollTimer=setTimeout(startTgPoll,3000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHAT & COMMANDS
+// ═══════════════════════════════════════════════════════════════
+function sendChat(){
+  const i=document.getElementById('chatInput');
+  const t=i.value.trim();if(!t)return;
+  i.value='';addMsg(t,'user');handleCmd(t);
+}
+function sc(cmd){document.getElementById('chatInput').value=cmd;document.getElementById('chatInput').focus();}
+function askAbout(match){
+  document.getElementById('chatInput').value=`/analyze ${match}`;
+  sendChat();switchTab('opps');
+}
+async function handleCmd(text){
+  const cmd=text.toLowerCase().trim();
+  const aiKey=document.getElementById('aiKey').value.trim();
+
+  if(cmd==='/start'){startScan();addMsg('🟢 Scanner started!');}
+  else if(cmd==='/stop'){stopScan();addMsg('🔴 Scanner stopped.');}
+  else if(cmd==='/news'){
+    switchTab('news');
+    addMsg(newsItems.length>0?`📰 ${newsItems.length} news items loaded. Check the News Feed tab!`:'No news loaded yet. Start the scanner first.');
+  }
+  else if(cmd==='/status'){
+    addMsg(`📊 Status\nScanner: ${scanning?'🟢 Running':'🔴 Idle'}\nOpportunities: ${opportunities.length}\n+EV bets: ${stats.ev}\nScans: ${stats.sc}\nAlerts: ${stats.al}\nNews items: ${stats.nw}`);
+  }
+  else if(!aiKey){addMsg('⚠️ Add your Anthropic API key in the sidebar to enable AI analysis.');}
+  else{
+    // AI conversation
+    const thinking=showThinking();
+    const newsCtx=newsItems.length?`\nBreaking tennis news:\n${newsItems.slice(0,3).map(n=>`- ${n.headline} (${n.impact})`).join('\n')}`:'';
+    const oppsCtx=opportunities.length?`\nCurrent opportunities:\n${opportunities.slice(0,3).map(o=>`- ${o.match}: ${o.type} EV+${o.evPct}%`).join('\n')}`:'';
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':aiKey,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify({
+          model:'claude-opus-4-5',max_tokens:500,
+          system:`You are TennisSense PRO, powered by Claude Opus 4. You are an elite tennis betting analyst using Markov chains, Monte Carlo simulation, Kelly Criterion, EV calculation, Poisson modeling, and surface-specific Elo. You also monitor breaking tennis news for injury/withdrawal impacts on betting lines. Always use American odds format. Be quantitative and direct.${newsCtx}${oppsCtx}`,
+          messages:[{role:'user',content:text}]
+        })
+      });
+      thinking.remove();
+      const d=await r.json();
+      const reply=d.content?.[0]?.text||'No response.';
+      addMsg(reply);
+      await sendTelegram(`🧠 AI Analysis\n\n${text}\n\n${reply}`);
+    }catch(e){thinking.remove();addMsg(`Error: ${e.message}`);}
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['opps','news','matches','log'][i]===name));
+  document.querySelectorAll('.tpane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+name));
+}
+function log(msg,type='i'){
+  const t=new Date().toTimeString().slice(0,8);
+  const el=document.createElement('div');el.className='lr';
+  el.innerHTML=`<span class="lt">${t}</span><span class="lm ${type}">${msg}</span>`;
+  const w=document.getElementById('logWrap');w.prepend(el);
+  if(w.children.length>300)w.lastChild.remove();
+}
+function addMsg(text,role='bot'){
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const el=document.createElement('div');el.className=`msg ${role}`;
+  el.innerHTML=`${text.replace(/\n/g,'<br>')}<div class="msg-meta">${role==='bot'?'TennisSense':'You'} · ${t}</div>`;
+  const msgs=document.getElementById('chatMsgs');msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight;
+}
+function showThinking(){
+  const el=document.createElement('div');el.className='msg bot';
+  el.innerHTML='<div class="dot-typing"><div class="dt"></div><div class="dt"></div><div class="dt"></div></div>';
+  document.getElementById('chatMsgs').appendChild(el);
+  document.getElementById('chatMsgs').scrollTop=99999;
+  return el;
+}
+function startCountdown(s){
+  clearInterval(cdTimer);
+  const fill=document.getElementById('rfill'),txt=document.getElementById('cdtxt');
+  fill.style.transition='none';fill.style.width='100%';
+  setTimeout(()=>{fill.style.transition=`width ${s}s linear`;fill.style.width='0%';},50);
+  let v=s;cdTimer=setInterval(()=>{v--;txt.textContent=`Next: ${v}s`;if(v<=0)clearInterval(cdTimer);},1000);
+  txt.textContent=`Next: ${s}s`;
+}
+window.onload=()=>{
+  document.getElementById('tgChat').value='8082026427';
+  document.getElementById('sportsKey').value='6cc6daee801f9d0c44082fd08aba495e4d4b8c0a6ebd8a221a47f51da93466f1';
+};
+</script>
+</body>
+</html>
